@@ -48,6 +48,9 @@ def ckeckCl(changeNum, params=""):
 
 @route("/AutoMonitor/<params:path>")
 def autoMonitor(params = ""):
+    print ()
+    print ("One job is going to be scheduled.")
+    print ("Params: ", params)
     try:
         cmds = []
         cmds.append("python3")
