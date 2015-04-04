@@ -128,7 +128,8 @@ def scheduledJobs(params):
         print ("Error: ")
         print (e)
         print ("output: ", e.output)
-        raise e
+        return
+        #raise e
 
     #print ()
     #print ("scheduled job result: \n", result)

@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 #
-import json
 import subprocess
 import time
 
@@ -29,7 +28,6 @@ def ckeckCl(changeNum, params=""):
     #return template("{{ret}}<p>{{tips}}, see <a href={{jobUrl}}>{{jobUrl}}</a>", ret = ret, tips=tips, jobUrl=jobUrl)
 
     ret = 0
-    resutl = ""
     try:
         cmds = []
         cmds.append("python3")
@@ -64,7 +62,7 @@ def autoMonitor(params = ""):
 
     result = result.decode("utf-8")
 
-    printBack = "%s\n%s" % (ret, result);
+    printBack = "%s\n%s\n" % (ret, result);
     print (printBack)
 
     return printBack
