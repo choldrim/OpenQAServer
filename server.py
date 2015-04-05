@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-#
 import subprocess
 import time
 
-#
 from bottle import route, run, template
 
+import fetchISO
 
 @route("/hello")
 @route('/hello/<t:int>')
@@ -21,11 +20,12 @@ def hello(t=0):
 @route('/CL/<changeNum>/<params:path>')
 def ckeckCl(changeNum, params=""):
 
+    print ("One CL was submitted, check it now.")
     print ("change num:", changeNum, "---", "params: ", params)
 
-    #(ret, tips, jobUrl) = client.run(changeNum, params)
-
     #return template("{{ret}}<p>{{tips}}, see <a href={{jobUrl}}>{{jobUrl}}</a>", ret = ret, tips=tips, jobUrl=jobUrl)
+
+    readyISO(params)
 
     ret = 0
     try:
@@ -51,6 +51,9 @@ def autoMonitor(params = ""):
     print ()
     print ("One job is going to be scheduled.")
     print ("Params: ", params)
+
+    readyISO(params)
+
     try:
         cmds = []
         cmds.append("python3")
@@ -69,6 +72,22 @@ def autoMonitor(params = ""):
     print (printBack)
 
     return printBack
+
+#def fetchISO(arch = "amd64", ver="current"):
+def readyISO(params):
+    arch = "amd64"
+    ver = "current"
+    paramList = [p.strip() for p in params.split(",")]
+    for p in paramList:
+        if p.startswith("ARCH"):
+            rawArch = p.split("=")[1]
+            if rawArch == "x86_64":
+                arch = "amd64"
+            else:
+                arch = "i386"
+
+    fetchISO.downloadISO(arch, ver)
+
 
 #run(host="0.0.0.0", port=8080)
 run(server="cherrypy", host="0.0.0.0", port=8080)

@@ -208,7 +208,8 @@ def waitForEnd(jobIds):
         except subprocess.CalledProcessError as e:
             # log it
             print (e)
-            raise e
+            print (e.output)
+            #raise e
 
         jsonStr = resultToJsonStr(result)
         if jsonStr == None:
@@ -387,9 +388,8 @@ if __name__ == "__main__":
     ret = 0
     ret, tips, jobUrl = run(rawParams)
 
-    output = "%s, see: %s" % (tips, jobUrl)
-
-    #print (ret)
-    print (output)
+    if tips and jobUrl:
+        output = "%s, see: %s" % (tips, jobUrl)
+        print (output)
 
     quit (ret)
