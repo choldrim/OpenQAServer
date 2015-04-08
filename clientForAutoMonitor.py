@@ -12,6 +12,8 @@ import sys
 
 from urllib import request
 
+import common
+import util
 
 clientPath = "/usr/share/openqa/script/client"
 host = "https://openqa.deepin.io"
@@ -243,44 +245,6 @@ def waitForEnd(jobIds):
 
         time.sleep(2)
 
-def initParams(testDir, rawParams):
-    #rawKVPair = [tuple(kv.strip().split("=")) for kv in rawParam.split(",")]
-    #params = dict(rawKVPair)
-
-    params = rawParams.strip()
-
-    if "DISTRI" in params:
-        print("You don't need set the DIRSTRI in params, please remove it and try again.")
-        return None
-
-    if len(params) > 0:
-        params += ",DISTRI=%s" % testDir
-    else:
-        params += "DISTRI=%s" % testDir
-
-    if "ISO" not in params:
-        params += ",ISO=deepin-desktop-amd64.iso"
-
-    if "FLAVOR" not in params:
-        params += ",FLAVOR=DVD"
-
-    if "ARCH" not in params:
-        params += ",ARCH=x86_64"
-
-    if "VERSION" not in params:
-        params += ",VERSION=2014.2"
-
-    if "USERNAME" not in params:
-        params += ",USERNAME=deepin"
-
-    if "USERPWD" not in params:
-        params += ",USERPWD=deepin"
-
-    params = params.strip()
-
-    return params
-
-
 def initWorkspace(reviewId):
     # ready testcase dir
     dirName = "%s" % (reviewId)
@@ -340,7 +304,7 @@ def run(rawParams):
     #distriName = initWorkspace(reviewId)
 
     distriName = "deepin"
-    params = initParams(distriName, rawParams)
+    params = common.initParams(distriName, rawParams)
     if params == None:
         return 1
 

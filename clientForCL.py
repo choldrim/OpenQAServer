@@ -241,8 +241,6 @@ def waitForEnd(jobIds):
         time.sleep(2)
 
 def initParams(testDir, rawParams):
-    #rawKVPair = [tuple(kv.strip().split("=")) for kv in rawParam.split(",")]
-    #params = dict(rawKVPair)
 
     params = rawParams.strip()
 

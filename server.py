@@ -7,6 +7,7 @@ import time
 from bottle import route, run, template
 
 import fetchISO
+import util
 
 @route("/hello")
 @route('/hello/<t:int>')
@@ -73,10 +74,10 @@ def autoMonitor(params = ""):
 
     return printBack
 
-#def fetchISO(arch = "amd64", ver="current"):
 def readyISO(params):
+    # default
     arch = "amd64"
-    ver = "current"
+    build = ""
     paramList = [p.strip() for p in params.split(",")]
     for p in paramList:
         if p.startswith("ARCH"):
@@ -85,8 +86,11 @@ def readyISO(params):
                 arch = "amd64"
             else:
                 arch = "i386"
-
-    fetchISO.downloadISO(arch, ver)
+        if p.startswith("BUILD"):
+            build = p.split("=")[1]
+    if build == "":
+        build = util.getLatestBuildDate()
+    fetchISO.downloadISO(arch, build)
 
 
 #run(host="0.0.0.0", port=8080)
