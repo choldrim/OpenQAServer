@@ -12,9 +12,11 @@ import sys
 
 from urllib import request
 
+import common
 
 clientPath = "/usr/share/openqa/script/client"
-host = "https://openqa.deepin.io"
+#host = "https://openqa.deepin.io"
+host = "http://10.0.4.207"
 distriDir = "/var/lib/openqa/share/tests"
 workingDir = os.path.join(os.getenv("HOME"), "Deepin-OpenQA-Commit-Test")
 
@@ -60,11 +62,16 @@ def genTemplates(rawParams):
             "flavor" : flavor,
             "version" : version
             }
-    test_suite = {"name" : "deepin_installation"}
+    test_suite = {"name" : "deepin_cl"}
+    group_name = "deepin-desktop"
+    prio = 50
     JobTemplates.append({
         "machine":machine,
         "product":product,
-        "test_suite":test_suite})
+        "test_suite":test_suite,
+        "group_name":group_name,
+        "prio":prio,
+    })
 
     # Machines
     # ...
@@ -240,58 +247,21 @@ def waitForEnd(jobIds):
 
         time.sleep(2)
 
-def initParams(testDir, rawParams):
-
-    params = rawParams.strip()
-
-    if "DISTRI" in params:
-        print("You don't need set the DIRSTRI in params, please remove it and try again.")
-        return None
-
-    if len(params) > 0:
-        params += ",DISTRI=%s" % testDir
-    else:
-        params += "DISTRI=%s" % testDir
-
-    if "ISO" not in params:
-        params += ",ISO=deepin-desktop-amd64.iso"
-
-    if "FLAVOR" not in params:
-        params += ",FLAVOR=DVD"
-
-    if "ARCH" not in params:
-        params += ",ARCH=x86_64"
-
-    if "VERSION" not in params:
-        params += ",VERSION=2014.2"
-
-    if "USERNAME" not in params:
-        params += ",USERNAME=deepin"
-
-    if "USERPWD" not in params:
-        params += ",USERPWD=deepin"
-
-    params = params.strip()
-
-    return params
-
 
 def initWorkspace(reviewId):
     # ready testcase dir
     dirName = "%s" % (reviewId)
-    dirPath = os.path.join(workingDir, dirName)
-    linkName = os.path.join(distriDir, dirName)
+    distriPath = os.path.join(distriDir, dirName)
+    #dirPath = os.path.join(workingDir, dirName)
+    #linkName = os.path.join(distriDir, dirName)
 
-    if os.path.exists(linkName):
-        #print ("link exists, remove:", linkName)
-        os.remove(linkName)
+    if os.path.exists(distriPath):
+        #print ("target exists, remove: %s" % distriPath)
+        shutil.rmtree(distriPath)
 
-    if os.path.exists(dirPath):
-        #print ("target exists, remove: %s" % dirPath)
-        shutil.rmtree(dirPath)
+    os.makedirs(distriPath)
 
-    os.makedirs(dirPath)
-
+    """
     # link
     linkCmds = ["ln", "-s", dirPath, linkName]
     try:
@@ -300,6 +270,7 @@ def initWorkspace(reviewId):
         # log it
         print (e)
         raise e
+    """
 
     # get revision id
     clId = reviewId
@@ -322,7 +293,7 @@ def initWorkspace(reviewId):
 
     # extract source code
     tarf = tarfile.open(tarFilePath)
-    tarf.extractall(dirPath)
+    tarf.extractall(distriPath)
     tarf.close()
 
     # delete tar file
@@ -333,7 +304,8 @@ def initWorkspace(reviewId):
 def run(reviewId, rawParams):
 
     distriName = initWorkspace(reviewId)
-    params = initParams(distriName, rawParams)
+    #params = initParams(distriName, rawParams)
+    params = common.initParams(distriName, rawParams)
     if params == None:
         return 1
 
@@ -368,8 +340,8 @@ def run(reviewId, rawParams):
 
 if __name__ == "__main__":
     # tmp
-    #reviewId = "3467"
-    #rawParams = "ISO=deepin-desktop-amd64.iso VERSION=2014.2 ARCH=x86_64"
+    reviewId = "3806"
+    rawParams = ""
     if len(sys.argv) < 2:
         print ("CLId must be set")
         quit (1)

@@ -44,7 +44,7 @@ def storeBuildNum(isoName, build):
     config[isoName]["BuildDate"] = build
     with open(isoConfigFile, "w") as f:
         config.write(f)
-
+"""
 def downloadISO(arch, build):
     isoName = "deepin-desktop-%s.iso" % arch
 
@@ -56,9 +56,22 @@ def downloadISO(arch, build):
         storeBuildNum(isoName, build)
     else:
         print ("ISO is exist, skip downloading.")
+"""
+
+def downloadISO(arch, build, t="desktop"):
+    isoName = "deepin-%s-%s.iso" % (t, arch)
+    isoNameForStore = "deepin-%s-%s_%s.iso" % (t, arch, build)
+
+    isoPath = os.path.join(targetDir, isoNameForStore)
+    if not os.path.exists(isoPath):
+        isoUrl = "%s/%s/%s" % (baseUrl, build, isoName)
+        print ("Download iso: %s ..." % isoUrl)
+        urlretrieve(isoUrl, os.path.join(targetDir, isoNameForStore))
+    else:
+        print ("ISO is exist, skip download.")
 
 if __name__ == "__main__":
-    ver = "20150326"
+    ver = "20150410"
     arch = "amd64"
 
     if len(sys.argv) > 1:

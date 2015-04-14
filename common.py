@@ -16,9 +16,6 @@ def initParams(testDir, rawParams):
     else:
         params += "DISTRI=%s" % testDir
 
-    if "ISO" not in params:
-        params += ",ISO=deepin-desktop-amd64.iso"
-
     if "FLAVOR" not in params:
         params += ",FLAVOR=DVD"
 
@@ -36,6 +33,18 @@ def initParams(testDir, rawParams):
 
     if "BUILD" not in params:
         params += ",BUILD=%s" % util.getLatestBuildDate()
+
+    # this shuld be placed after BUILD init
+    if "ISO" not in params:
+        build = ""
+        bStrs = [p for p in params.split(",") if p.strip().startswith("BUILD")]
+        if len(bStrs) > 0:
+            build = bStrs[0].split("=")[1]
+
+        if build == "":
+            params += ",ISO=deepin-desktop-amd64.iso"
+        else:
+            params += ",ISO=deepin-desktop-amd64_%s.iso" % ( build )
 
     params = params.strip()
 
