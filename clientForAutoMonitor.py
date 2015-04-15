@@ -2,21 +2,16 @@
 # coding=utf-8
 
 import json
-import pprint
 import os
 import subprocess
-import shutil
-import tarfile
-import time
 import sys
 
-from urllib import request
-
 import common
-import util
 
 clientPath = "/usr/share/openqa/script/client"
 host = "https://openqa.deepin.io"
+#host = "http://localhost"
+distriDir = "/var/lib/openqa/share/tests/deepin"
 
 def resultToJsonStr(result):
 
@@ -28,6 +23,14 @@ def resultToJsonStr(result):
     jsonStr = result.replace(r'\"', '"')[1:-2]
 
     return jsonStr
+
+def syncWorkspace():
+    os.chdir(distriDir)
+    gitCmd = "git pull origin master:master"
+    print (gitCmd)
+    ret = os.system(gitCmd)
+
+    return ret
 
 def scheduledJobs(params):
 
@@ -62,14 +65,18 @@ def scheduledJobs(params):
     return jobIds
 
 def run(rawParams):
-    distriName = "deepin"
-    params = common.initParams(distriName, rawParams)
-    if params == None:
-        return 1
 
-    jobIds = scheduledJobs(params)
+    syncRet = syncWorkspace()
+    if syncRet != 0:
+        print ("Sync(git pull) distri workspace fail, abort.")
 
-    print("Scheduled %d job: %s" %(len(jobIds), "  ".join(jobIds)))
+    else:
+        distriName = "deepin"
+        params = common.initParams(distriName, rawParams)
+
+        jobIds = scheduledJobs(params)
+
+        print("Scheduled %d job: %s" %(len(jobIds), "  ".join([str(i) for i in jobIds])))
 
 if __name__ == "__main__":
 
