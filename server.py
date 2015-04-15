@@ -47,6 +47,8 @@ def ckeckCl(changeNum, params=""):
 
     return "%s\n%s" % (ret, result)
 
+@route("/AutoMonitor")
+@route("/AutoMonitor/")
 @route("/AutoMonitor/<params:path>")
 def autoMonitor(params = ""):
     print ()
@@ -69,10 +71,11 @@ def autoMonitor(params = ""):
 
     result = result.decode("utf-8")
 
-    printBack = "%s\n%s\n" % (ret, result);
-    print (printBack)
+    print ("return code: ", ret);
+    print ("result:")
+    print (result)
 
-    return printBack
+    return result
 
 def readyISO(params):
     # default
