@@ -6,7 +6,7 @@ from urllib import request
 
 def getLatestBuildDate():
 
-    dailyLiveUrl = "http://cdimage/daily-live/desktop/"
+    dailyLiveUrl = "http://cdimage/daily-live-next/desktop/"
     with request.urlopen(dailyLiveUrl) as resp:
         data = resp.read().decode("utf-8")
 
