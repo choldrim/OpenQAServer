@@ -77,10 +77,27 @@ def autoMonitor(params = ""):
 
     return result
 
+def getParam(params, key):
+    if params == "" or "," not in params or "=" not in params:
+        return ""
+    paramsDict = dict([p.strip().split("=") for p in params.split(",")])
+    print ("params dict: ")
+    print (paramsDict)
+    return paramsDict.get(key)
+
 def readyISO(params):
     # default
     arch = "amd64"
     build = ""
+    rawArch = getParam(params, "ARCH")
+    if rawArch == "x86_64":
+        arch = "amd64"
+    else:
+        arch = "i386"
+
+    build = getParam(params, "BUILD")
+
+    """
     paramList = [p.strip() for p in params.split(",")]
     for p in paramList:
         if p.startswith("ARCH"):
@@ -91,8 +108,11 @@ def readyISO(params):
                 arch = "i386"
         if p.startswith("BUILD"):
             build = p.split("=")[1]
+    """
+
     if build == "":
-        build = util.getLatestBuildDate()
+        flavor = getParam(params, "FLAVOR")
+        build = util.getLatestBuildDate(flavor)
     fetchISO.downloadISO(arch, build)
 
 

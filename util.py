@@ -3,12 +3,20 @@
 
 import re
 from urllib import request
+from urllib.error import URLError
 
-def getLatestBuildDate():
+def getLatestBuildDate(flavor="DVD"):
 
     dailyLiveUrl = "http://cdimage/daily-live-next/desktop/"
-    with request.urlopen(dailyLiveUrl) as resp:
+    if flavor == "SID-DVD":
+        dailyLiveUrl = "http://cdimage/daily-live-sid/"
+    try:
+        resp = request.urlopen(dailyLiveUrl)
         data = resp.read().decode("utf-8")
+    except URLError as e:
+        print (e)
+        return "20150420"
+        #raise e
 
     a = re.compile(">(\d+)/<")
 
@@ -17,5 +25,9 @@ def getLatestBuildDate():
 
     return d
 
+import sys
 if __name__ == "__main__":
-    print (getLatestBuildDate())
+    flavor = "DVD"
+    if len(sys.argv) > 1:
+        flavor = sys.argv[1]
+    print (getLatestBuildDate(flavor))
