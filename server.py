@@ -6,6 +6,7 @@ import time
 
 from bottle import route, run, template
 
+import common
 import fetchISO
 import util
 
@@ -26,6 +27,8 @@ def ckeckCl(changeNum, params=""):
 
     #return template("{{ret}}<p>{{tips}}, see <a href={{jobUrl}}>{{jobUrl}}</a>", ret = ret, tips=tips, jobUrl=jobUrl)
 
+    params = common.initParams("deepin", params)
+    print ("suply the params: ", params)
     readyISO(params)
 
     ret = 0
@@ -55,6 +58,8 @@ def autoMonitor(params = ""):
     print ("One job is going to be scheduled.")
     print ("Params: ", params)
 
+    params = common.initParams("deepin", params)
+    print ("suply the params: ", params)
     readyISO(params)
 
     try:
@@ -77,43 +82,27 @@ def autoMonitor(params = ""):
 
     return result
 
-def getParam(params, key):
-    if params == "" or "," not in params or "=" not in params:
-        return ""
-    paramsDict = dict([p.strip().split("=") for p in params.split(",")])
-    print ("params dict: ")
-    print (paramsDict)
-    return paramsDict.get(key)
-
 def readyISO(params):
-    # default
-    arch = "amd64"
+
+    arch = ""
     build = ""
-    rawArch = getParam(params, "ARCH")
+
+    # arch
+    rawArch = common.getParam(params, "ARCH")
     if rawArch == "x86_64":
         arch = "amd64"
-    else:
+    elif rawArch == "i386":
         arch = "i386"
+    else:
+        arch = "amd64"
 
-    build = getParam(params, "BUILD")
+    # build
+    build = common.getParam(params, "BUILD")
 
-    """
-    paramList = [p.strip() for p in params.split(",")]
-    for p in paramList:
-        if p.startswith("ARCH"):
-            rawArch = p.split("=")[1]
-            if rawArch == "x86_64":
-                arch = "amd64"
-            else:
-                arch = "i386"
-        if p.startswith("BUILD"):
-            build = p.split("=")[1]
-    """
+    # flavor
+    flavor = common.getParam(params, "FLAVOR")
 
-    if build == "":
-        flavor = getParam(params, "FLAVOR")
-        build = util.getLatestBuildDate(flavor)
-    fetchISO.downloadISO(arch, build)
+    fetchISO.downloadISO(arch, build, flavor)
 
 
 #run(host="0.0.0.0", port=8080)

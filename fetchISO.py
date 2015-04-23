@@ -6,9 +6,13 @@ import os
 import sys
 
 from urllib.request import urlretrieve
+from urllib.error import URLError
+
+import util
 
 # cdimage url
-baseUrl = "http://cdimage/daily-live-next/desktop"
+desktopBaseUrl = "http://cdimage/daily-live-next/desktop/"
+sidBaseUrl = "http://cdimage/daily-live-sid/"
 
 # factory dir
 targetDir = "/var/lib/openqa/factory/iso"
@@ -44,21 +48,15 @@ def storeBuildNum(isoName, build):
     config[isoName]["BuildDate"] = build
     with open(isoConfigFile, "w") as f:
         config.write(f)
-"""
-def downloadISO(arch, build):
-    isoName = "deepin-desktop-%s.iso" % arch
 
-    isoUrl = "%s/%s/%s" % (baseUrl, build, isoName)
-    if not checkBuildNum(isoName, build):
-        print ("Download iso: %s" % isoUrl)
-        urlretrieve(isoUrl, os.path.join(targetDir, isoName))
-        # write back after downloading
-        storeBuildNum(isoName, build)
-    else:
-        print ("ISO is exist, skip downloading.")
-"""
+def downloadISO(arch, build, flavor="DVD"):
 
-def downloadISO(arch, build, t="desktop"):
+    t = "desktop"
+    baseUrl = desktopBaseUrl
+    if flavor == "SID-DVD":
+        t = "sid"
+        baseUrl = sidBaseUrl
+
     isoName = "deepin-%s-%s.iso" % (t, arch)
     isoNameForStore = "deepin-%s-%s_%s.iso" % (t, arch, build)
 
@@ -66,18 +64,29 @@ def downloadISO(arch, build, t="desktop"):
     if not os.path.exists(isoPath):
         isoUrl = "%s/%s/%s" % (baseUrl, build, isoName)
         print ("Download iso: %s ..." % isoUrl)
-        urlretrieve(isoUrl, os.path.join(targetDir, isoNameForStore))
+        try:
+            urlretrieve(isoUrl, os.path.join(targetDir, isoNameForStore))
+        except URLError as e:
+            print (" ------------ Error ---------------")
+            print (e)
+            print ("url: ", isoUrl)
+            raise e
     else:
         print ("ISO is exist, skip download.")
 
 if __name__ == "__main__":
-    ver = "20150410"
     arch = "amd64"
+    flavor = "DVD"
 
     if len(sys.argv) > 1:
         arch = sys.argv[1]
 
     if len(sys.argv) > 2:
-        ver = sys.argv[2]
+        flavor = sys.argv[2]
 
-    downloadISO(arch, ver)
+    if len(sys.argv) > 3:
+        build = sys.argv[3]
+
+    build = util.getLatestBuildDate(flavor, arch)
+
+    downloadISO(arch, build, flavor)
