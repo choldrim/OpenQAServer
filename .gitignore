@@ -1,6 +1,7 @@
 # choldrim
 nohup.out
 templates
+*.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

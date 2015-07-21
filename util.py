@@ -12,7 +12,7 @@ def getLatestBuildDate(flavor="DVD", arch="amd64"):
     t = "desktop"
 
     dailyLiveUrl = "http://cdimage/daily-live-next/desktop/"
-    if flavor == "SID-DVD":
+    if flavor == "SID-DVD" or flavor == "SID-PXE":
         t = "sid"
         dailyLiveUrl = "http://cdimage/daily-live-sid/"
     try:

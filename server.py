@@ -3,6 +3,7 @@
 
 import subprocess
 import time
+from datetime import datetime
 
 from bottle import route, run, template
 
@@ -28,10 +29,11 @@ def ckeckCl(changeNum, params=""):
     #return template("{{ret}}<p>{{tips}}, see <a href={{jobUrl}}>{{jobUrl}}</a>", ret = ret, tips=tips, jobUrl=jobUrl)
 
     params = common.initParams("deepin", params)
-    print ("suply the params: ", params)
+    print ("after initing the params: ", params)
     readyISO(params)
 
     ret = 0
+
     try:
         cmds = []
         cmds.append("python3")
@@ -55,6 +57,7 @@ def ckeckCl(changeNum, params=""):
 @route("/AutoMonitor/<params:path>")
 def autoMonitor(params = ""):
     print ()
+    print ("======= %s =======" % str(datetime.now()))
     print ("One job is going to be scheduled.")
     print ("Params: ", params)
 

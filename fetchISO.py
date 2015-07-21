@@ -53,7 +53,7 @@ def downloadISO(arch, build, flavor="DVD"):
 
     t = "desktop"
     baseUrl = desktopBaseUrl
-    if flavor == "SID-DVD":
+    if flavor == "SID-DVD" or flavor == "SID-PXE":
         t = "sid"
         baseUrl = sidBaseUrl
 

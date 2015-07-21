@@ -45,6 +45,9 @@ def scheduledJobs(params):
     cmds.append("post")
     cmds += [ p.strip() for p in params.split(",") if len(p.strip()) > 0]
 
+    print ("scheduled job command:")
+    print (" ".join(cmds))
+
     try:
         result = subprocess.check_output(cmds, env={"OPENQA_CONFIG":"/etc/openqa"})
     except subprocess.CalledProcessError as e:

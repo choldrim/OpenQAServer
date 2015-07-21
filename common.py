@@ -2,21 +2,13 @@
 # encoding: utf-8
 
 import util
+import configparser
+
+defaultParamsConfPath = "/etc/openqa/deepin.ini"
 
 def initParams(distri="deepin", rawParams=""):
 
     params = rawParams.strip()
-
-    """
-    if "DISTRI" in params:
-        print("You don't need set the DIRSTRI in params, please remove it and try again.")
-        return None
-
-    if len(params) > 0:
-        params += ",DISTRI=%s" % distri
-    else:
-        params += "DISTRI=%s" % distri
-    """
 
     if len(params) > 0:
         if "DISTRI" not in params:
@@ -26,19 +18,46 @@ def initParams(distri="deepin", rawParams=""):
             params += "DISTRI=%s" % distri
 
     if "FLAVOR" not in params:
-        params += ",FLAVOR=DVD"
+        flavor = getDefaultParam("FLAVOR")
+        if flavor:
+            params += ",FLAVOR=%s" % flavor
+        else:
+            params += ",FLAVOR=DVD"
 
     if "ARCH" not in params:
-        params += ",ARCH=x86_64"
+        arch = getDefaultParam("ARCH")
+        if arch:
+            params += ",ARCH=%s" % arch
+        else:
+            params += ",ARCH=x86_64"
 
     if "VERSION" not in params:
-        params += ",VERSION=2014.2"
+        version = getDefaultParam("VERSION")
+        if version:
+            params += ",VERSION=%s" % version
+        else:
+            params += ",VERSION=2015"
 
     if "USERNAME" not in params:
-        params += ",USERNAME=deepin"
+        username = getDefaultParam("USERNAME")
+        if username:
+            params += ",USERNAME=%s" % username
+        else:
+            params += ",USERNAME=deepin"
 
     if "USERPWD" not in params:
-        params += ",USERPWD=deepin"
+        userpwd = getDefaultParam("USERPWD")
+        if userpwd:
+            params += ",USERPWD=%s" % userpwd
+        else:
+            params += ",USERPWD=deepin"
+
+    if "HDDSIZEGB" not in params:
+        size = getDefaultParam("HDDSIZEGB")
+        if size:
+            params += ",HDDSIZEGB=%s" % size
+        else:
+            params += ",HDDSIZEGB=10"
 
     if "BUILD" not in params:
 
@@ -57,21 +76,51 @@ def initParams(distri="deepin", rawParams=""):
     # this shuld be placed after BUILD init
     if "ISO" not in params:
         t = "desktop"
-        if getParam(params, "FLAVOR") == "SID-DVD":
+        if getParam(params, "FLAVOR") == "SID-DVD" or getParam(params, "FLAVOR") == "SID-PXE":
             t = "sid"
 
         build = getParam(params, "BUILD")
-
-        #bStrs = [p for p in params.split(",") if p.strip().startswith("BUILD")]
-        #if len(bStrs) > 0:
-        #    build = bStrs[0].split("=")[1]
 
         if build == "":
             params += ",ISO=deepin-%s-amd64.iso" %t
         else:
             params += ",ISO=deepin-%s-amd64_%s.iso" % ( t, build )
 
+    paramDict = getExtensionParams()
+    for (k, v) in paramDict.items():
+        k = k.upper()
+        if k not in params:
+            params += ",%s=%s" %(k, v)
+
     params = params.strip()
+    return params
+
+
+#defaultParamsConfig = None
+def getDefaultParam(key):
+
+    #defaultParamsconfig
+    #if not defaultParamsConfig:
+    defaultParamsConfig = configparser.ConfigParser()
+    defaultParamsConfig.read(defaultParamsConfPath)
+
+    if key in defaultParamsConfig["DEFAULT"]:
+        return defaultParamsConfig["DEFAULT"][key]
+
+    return ""
+
+
+def getExtensionParams():
+
+    params = {}
+
+    config = configparser.ConfigParser()
+    config.read(defaultParamsConfPath)
+
+    section = "EXTENSION"
+    items = config.items(section)
+    for (k, v) in items:
+        params[k] = v
 
     return params
 
