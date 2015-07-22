@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+import logging
 import subprocess
 import time
+
 from datetime import datetime
 
 from bottle import route, run, template
@@ -10,6 +12,9 @@ from bottle import route, run, template
 import common
 import fetchISO
 import util
+
+LOG_FILE = "server.log"
+logging.basicConfig(level=logging.DEBUG, filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s")
 
 @route("/hello")
 @route('/hello/<t:int>')
@@ -23,12 +28,11 @@ def hello(t=0):
 @route('/CL/<changeNum>/<params:path>')
 def ckeckCl(changeNum, params=""):
 
-    print ("One CL was submitted, check it now.")
-    print ("change num:", changeNum, "---", "params: ", params)
+    tmpMsg = "One CL (%s) with params: \"%s\" was submitted, check it now." % (changeNum, params)
+    print (tmpMsg)
+    logging.debug(tmpMsg)
 
-    #return template("{{ret}}<p>{{tips}}, see <a href={{jobUrl}}>{{jobUrl}}</a>", ret = ret, tips=tips, jobUrl=jobUrl)
-
-    params = common.initParams("deepin", params)
+    params = common.initParams(changeNum, params)
     print ("after initing the params: ", params)
     readyISO(params)
 
@@ -48,7 +52,7 @@ def ckeckCl(changeNum, params=""):
 
     result = result.decode("utf-8")
 
-    print ("%s\n%s" % (ret, result))
+    logging.debug("%s\n%s" % (ret, result))
 
     return "%s\n%s" % (ret, result)
 
@@ -58,8 +62,8 @@ def ckeckCl(changeNum, params=""):
 def autoMonitor(params = ""):
     print ()
     print ("======= %s =======" % str(datetime.now()))
-    print ("One job is going to be scheduled.")
-    print ("Params: ", params)
+    print ("One job is going to be scheduled with params: \"%s\"." % params)
+    logging.debug("One job is going to be scheduled with params: \"%s\"." % params)
 
     params = common.initParams("deepin", params)
     print ("suply the params: ", params)

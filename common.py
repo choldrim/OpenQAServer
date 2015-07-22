@@ -22,7 +22,7 @@ def initParams(distri="deepin", rawParams=""):
         if flavor:
             params += ",FLAVOR=%s" % flavor
         else:
-            params += ",FLAVOR=DVD"
+            params += ",FLAVOR=SID-DVD"
 
     if "ARCH" not in params:
         arch = getDefaultParam("ARCH")
@@ -75,9 +75,10 @@ def initParams(distri="deepin", rawParams=""):
 
     # this shuld be placed after BUILD init
     if "ISO" not in params:
-        t = "desktop"
-        if getParam(params, "FLAVOR") == "SID-DVD" or getParam(params, "FLAVOR") == "SID-PXE":
-            t = "sid"
+        t = "sid"
+        #if getParam(params, "FLAVOR") == "SID-DVD" or getParam(params, "FLAVOR") == "SID-PXE":
+        if getParam(params, "FLAVOR") == "DVD":
+            t = "desktop"
 
         build = getParam(params, "BUILD")
 
@@ -96,11 +97,8 @@ def initParams(distri="deepin", rawParams=""):
     return params
 
 
-#defaultParamsConfig = None
 def getDefaultParam(key):
 
-    #defaultParamsconfig
-    #if not defaultParamsConfig:
     defaultParamsConfig = configparser.ConfigParser()
     defaultParamsConfig.read(defaultParamsConfPath)
 
@@ -118,6 +116,8 @@ def getExtensionParams():
     config.read(defaultParamsConfPath)
 
     section = "EXTENSION"
+    if not config.has_section(section):
+        return params
     items = config.items(section)
     for (k, v) in items:
         params[k] = v

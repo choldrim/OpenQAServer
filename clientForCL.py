@@ -2,23 +2,25 @@
 # coding=utf-8
 
 import json
+import logging
 import pprint
-import os
 import subprocess
 import shutil
 import tarfile
 import time
 import sys
+import os
 
 from urllib import request
 
 import common
 
 clientPath = "/usr/share/openqa/script/client"
-#host = "https://openqa.deepin.io"
-host = "http://10.0.4.207"
+host = "http://localhost"
 distriDir = "/var/lib/openqa/share/tests"
-workingDir = os.path.join(os.getenv("HOME"), "Deepin-OpenQA-Commit-Test")
+
+LOG_FILE = "check_cl.log"
+logging.basicConfig(level=logging.DEBUG, filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s")
 
 debug = False
 
@@ -30,18 +32,20 @@ def loadTemplates(templatesFile):
     cmds.append(templatesFile)
 
     try:
-        print("Loading templates...")
+        #print("Loading templates...")
+        logging.debug("Loading templates...")
         result = subprocess.check_output(cmds)
         result = result.decode("utf-8")
-        print ("Load_templates result: \n", result, "\n")
+        #print ("Load_templates result: \n", result, "\n")
+        logging.debug("Load_templates result: \n%s\n" %result)
     except subprocess.CalledProcessError as e:
-        print (e)
-        print ("output: ", e.output)
+        logging.error(e)
 
 
 def genTemplates(rawParams):
 
-    print ("Generate template...")
+    #print ("Generate template...")
+    logging.debug("Generate template...")
 
     params = dict([tuple(kv.split("=")) for kv in rawParams.split(",")])
 
@@ -128,77 +132,43 @@ def scheduledJobs(params):
 
     # execute
     try:
-        if debug:
-            print ("scheduled job...")
-            print (" cmd: ", " ".join(cmds))
+        #print ("scheduled job with cmd:\n ", " ".join(cmds))
+        logging.debug("scheduled job with cmd:\n %s" % " ".join(cmds))
         result = subprocess.check_output(cmds, env={"OPENQA_CONFIG":"/etc/openqa"})
     except subprocess.CalledProcessError as e:
-        print ("Error:", e)
-        print ("Output:", e.output)
-        raise e
+        #print ("Error:", e)
+        #print ("Output:", e.output)
+        logging.error(e)
+        #raise e
 
     #print ("scheduled job, result: \n", result)
 
     jsonStr = resultToJsonStr(result)
 
     if (jsonStr == None):
-        print("Get a null result from server when scheduled jobs, abort.")
+        #print("Get a null result from server when scheduled jobs, abort.")
+        logging.error("Get a null result from server when scheduled jobs, abort.")
         return
 
     jsonData = json.loads(jsonStr)
     jobIds = jsonData.get("ids")
 
     if len(jobIds) == 0:
-        print("No job has been created, please check your params for Startup")
+        #print("No job has been created, please check your params for Startup")
+        logging.warn("No job has been created, please check your params for Startup")
         return
 
     print("Scheduled Result:", jsonStr)
+    logging.debug("Scheduled Result: %s" % jsonData)
 
     return jobIds
 
 def waitForEnd(jobIds):
 
-    """ for multi jobs
-    jobsState = {}
-    jobsResult = {}
-
-    cmds = []
-    cmds.append(clientPath)
-    cmds.append("--host")
-    cmds.append(host)
-
-    cmds.append("jobs")
-    result = subprocess.check_output(cmds)
-    result = result.decode("utf-8")
-    if '\"jobs\"' not in result:
-        print("json data error.")
-        return None
-    result = result.replace(r'\"', '"')[1:-2]
-    jsonData = json.loads(result)
-    jobs = jsonData.get("jobs")
-    for job in jobs:
-        if job.get("id") in jobIds:
-            jobsState[job.get("id")] = job.get("state")
-            jobsResult[job.get("id")] = job.get("result")
-
-    for jobId in jobIds:
-        print ("jobs state: ")
-        print ("job id: %d, state: %s , result: %s" %(
-            jobId, jobsState[jobId], jobsResult[jobId]))
-        # state: scheduled, running, cancelled, waiting, done
-        if jobsState[jobId] == "done":
-            # handle
-
-            # result: none, passed, failed, incomplete
-            if jobsResult[jobId] == "passed":
-                pass
-
-    time.sleep(2)
-    """
-
     # just for one job
     if len(jobIds) > 1:
-        print("scheduled %d jobs, it shuld be one job in normal, please check your params, abort." % len(jobIds))
+        logging.debug("scheduled %d jobs, it shuld be one job in normal, please check your params, abort." % len(jobIds))
+        return -1
     jobId = jobIds[0]
     cmds = []
     cmds.append(clientPath)
@@ -212,13 +182,13 @@ def waitForEnd(jobIds):
             result = subprocess.check_output(cmds)
         except subprocess.CalledProcessError as e:
             # log it
-            print (e)
-            raise e
+            logging.error(e)
+            return -1
 
         jsonStr = resultToJsonStr(result)
         if jsonStr == None:
-            print ("Get unexpect result when check job state, result: \n %s" % result)
-            return None
+            logging.error("Get unexpect result when check job state, result: \n %s" % result)
+            return -1
 
         jsonData = json.loads(jsonStr)
         jobData = jsonData.get("job")
@@ -226,7 +196,8 @@ def waitForEnd(jobIds):
         jobResult = jobData.get("result")
 
 
-        if debug:
+        waitingDebug = False
+        if waitingDebug:
             print ("\n---------------------------------------------")
             print ("job (%d) state: %s" % (jobId, jobState))
             print ()
@@ -252,25 +223,11 @@ def initWorkspace(reviewId):
     # ready testcase dir
     dirName = "%s" % (reviewId)
     distriPath = os.path.join(distriDir, dirName)
-    #dirPath = os.path.join(workingDir, dirName)
-    #linkName = os.path.join(distriDir, dirName)
 
     if os.path.exists(distriPath):
-        #print ("target exists, remove: %s" % distriPath)
         shutil.rmtree(distriPath)
 
     os.makedirs(distriPath)
-
-    """
-    # link
-    linkCmds = ["ln", "-s", dirPath, linkName]
-    try:
-        subprocess.check_call(linkCmds)
-    except subprocess.CalledProcessError as e:
-        # log it
-        print (e)
-        raise e
-    """
 
     # get revision id
     clId = reviewId
@@ -283,10 +240,9 @@ def initWorkspace(reviewId):
     # get source code
     sourceUrl = "https://cr.deepin.io/changes/%s/revisions/%s/archive?format=tar" % (clId, revisionId)
     res = request.urlopen(sourceUrl)
-    print ("Downloading CL %s source code ..." % clId)
-    print (sourceUrl)
+    logging.debug("Downloading CL %s source code, from url: %s" % (clId, sourceUrl))
     data = res.read()
-    print ("Finish download")
+    logging.debug("Finish download")
     tarFilePath = "/tmp/%s.tar" % (reviewId)
     with open(tarFilePath, "wb") as f:
         f.write(data)
@@ -301,15 +257,9 @@ def initWorkspace(reviewId):
 
     return dirName
 
-def run(reviewId, rawParams):
+def run(reviewId, params):
 
     distriName = initWorkspace(reviewId)
-    #params = initParams(distriName, rawParams)
-    params = common.initParams(distriName, rawParams)
-    if params == None:
-        return 1
-
-    print ("Params: ", params)
 
     tempPath = genTemplates(params)
     loadTemplates(tempPath)
@@ -331,6 +281,8 @@ def run(reviewId, rawParams):
         tips = tips % ("cancelled")
     elif ret == 3:
         tips = tips % ("failed with incomplete state")
+    else:
+        tips = tips % ("other error, please check OpenQAServer log")
 
     #print (tips)
 
@@ -339,22 +291,23 @@ def run(reviewId, rawParams):
     return ret, tips, jobUrl
 
 if __name__ == "__main__":
-    # tmp
-    reviewId = "3806"
-    rawParams = ""
+
     if len(sys.argv) < 2:
         print ("CLId must be set")
         quit (1)
 
     reviewId = sys.argv[1]
-    rawParams = ",".join(sys.argv[2:])
+    params = ",".join(sys.argv[2:])
 
     ret = 0
-    ret, tips, jobUrl = run(reviewId, rawParams)
+    ret, tips, jobUrl = run(reviewId, params)
 
     output = "%s, see: %s" % (tips, jobUrl)
+
+    logging.debug(output)
+
     print (output)
 
-    print (ret)
+    #print (ret)
 
     quit (ret)

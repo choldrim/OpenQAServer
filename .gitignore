@@ -2,6 +2,7 @@
 nohup.out
 templates
 *.log
+*.LOG
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
