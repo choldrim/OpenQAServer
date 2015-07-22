@@ -28,6 +28,8 @@ def hello(t=0):
 @route('/CL/<changeNum>/<params:path>')
 def ckeckCl(changeNum, params=""):
 
+    print ()
+    print ("======= %s =======" % str(datetime.now()))
     tmpMsg = "One CL (%s) with params: \"%s\" was submitted, check it now." % (changeNum, params)
     print (tmpMsg)
     logging.debug(tmpMsg)
