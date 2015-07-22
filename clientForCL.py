@@ -16,7 +16,7 @@ from urllib import request
 import common
 
 clientPath = "/usr/share/openqa/script/client"
-host = "http://localhost"
+host = "http://10.0.4.250"
 distriDir = "/var/lib/openqa/share/tests"
 
 LOG_FILE = "check_cl.log"
