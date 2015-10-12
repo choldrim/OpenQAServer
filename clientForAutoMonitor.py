@@ -9,8 +9,7 @@ import sys
 import common
 
 clientPath = "/usr/share/openqa/script/client"
-host = "https://openqa.deepin.io"
-#host = "http://localhost"
+host = "localhost:9526"
 distriDir = "/var/lib/openqa/share/tests/deepin"
 
 def resultToJsonStr(result):
@@ -40,7 +39,7 @@ def scheduledJobs(params):
     cmds.append(clientPath)
     cmds.append("--host")
     cmds.append(host)
-    cmds.append("--rawjson")
+    #cmds.append("--rawjson")
     cmds.append("isos")
     cmds.append("post")
     cmds += [ p.strip() for p in params.split(",") if len(p.strip()) > 0]
