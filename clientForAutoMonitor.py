@@ -9,7 +9,7 @@ import sys
 import common
 
 clientPath = "/usr/share/openqa/script/client"
-host = "localhost:9526"
+host = "openqa-webui:9526"
 distriDir = "/var/lib/openqa/share/tests/deepin"
 
 def resultToJsonStr(result):

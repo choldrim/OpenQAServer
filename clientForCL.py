@@ -16,7 +16,8 @@ from urllib import request
 import common
 
 clientPath = "/usr/share/openqa/script/client"
-host = "http://10.0.4.250"
+showHost = "http://10.0.4.250"
+host = "openqa-webui:9526"
 distriDir = "/var/lib/openqa/share/tests"
 
 LOG_FILE = "check_cl.log"
@@ -270,7 +271,7 @@ def run(reviewId, params):
 
     ret = waitForEnd(ids)
 
-    jobUrl = "%s/tests/%d" % (host, ids[0])
+    jobUrl = "%s/tests/%d" % (showHost, ids[0])
     tips = "Job has been %s"
 
     if ret == 0:
